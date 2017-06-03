@@ -1,64 +1,64 @@
 # -*- coding: utf-8 -*-
-import pygame, time
+import pygame
 
-axis_x = 0
-axis_y = 1
-x_inverted = False
-y_inverted = False
-move_forward = False
-move_backward = False
-move_right = False
-move_left = False
+global event_flag
+global quit
+global left_motor
+global right_motor
+l_axis = 1
+left_motor = False
+right_motor = False
 event_flag = True
 quit = False
-refresh = 0.05
 
 def event_handler(events):
 
-	for event in events:
-		print event
-		if event.type == pygame.QUIT:
-			# Se botão "sair" pressionado
-			event_flag = True
-			quit = True
-		elif event.type == pygame.KEYDOWN:
-			# Tecla pressionada
-			print 'tecla'
-			event_flag = True
-			if event.key == 27:
-				quit = True
-				print quit
-		elif event.type == pygame.KEYUP:
-			if event.key == pygame.K_ESCAPE:
-				quit = False
-		elif event.type == pygame.JOYAXISMOTION:
-			# Os eixos do joystick foram acionados
-			event_flag = True
-			x = j.get_axis(axis_x)
-			y = j.get_axis(axis_y)
-			# Inverter eixos incorretos
-			if x_inverted:
-				x = -x
-			if y_inverted:
-				y = -y
-			# Determinar valores up, down, left, right
-			if x < -0.1:
-				move_left = True
-				move_right = False
-			elif x > 0.1:
-				move_left = False
-				move_right = True
-			else:
-				move_left = False
-				move_right = False
+    global event_flag
+    global quit
+    global move_forward
+    global move_backward
+    global move_left
+    global move_right
+    global left_motor
+    global right_motor
 
-			if y < -0.1:
-				move_forward = True
-				move_backward = False
-			elif y > 0.1:
-				move_forward = False
-				move_backward = True
-
+    for event in events:
+        if event.type == pygame.QUIT:
+            # Se botão "sair" pressionado
+            event_flag = True
+            quit = True
+        elif event.type == pygame.KEYDOWN:
+            # Tecla pressionada
+            event_flag = True
+            if event.key == 27:
+                quit = True
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_ESCAPE:
+                quit = False
+        elif event.type == pygame.JOYAXISMOTION:
+            # Os eixos do joystick foram acionados
+            event_flag = True
+            y = j.get_axis(l_axis)
+            if y < 0:
+                left_motor = 1
+            elif y > 0:
+                left_motor = -1
+            else:
+                left_motor = 0
+        elif event.type == pygame.JOYBUTTONDOWN:
+            event_flag = True
+            if event.button == 0:
+                right_motor = 1
+            if event.button == 2:
+                right_motor = -1
+        elif event.type == pygame.JOYBUTTONUP:
+            event_flag = True
+            if event.button == 0:
+                right_motor = 0
+            if event.button == 2:
+                right_motor = 0      
+                
+# Detecção e inicialização do joystick
 pygame.joystick.init()
 if(pygame.joystick.Joystick(0)):
 	j = pygame.joystick.Joystick(0)
@@ -67,31 +67,39 @@ if(pygame.joystick.Joystick(0)):
 	print 'Joystick ' + name + 'detectado.'
 else:
 	print 'Joystick não detectado, verifique a conexão.'
-screen = pygame.display.set_mode([300, 300])
+# Configuração de vídeo, relógio
+width = 640
+height = 480
+image = pygame.image.load('img/logo.png')
+image = pygame.transform.scale(image, (300,300))
+img_rect = image.get_rect(centerx=(width/2))
+screen = pygame.display.set_mode([width, height])
 pygame.display.set_caption('Caveirão')
-pygame.font.init()
-myfont = pygame.font.SysFont('', 20)
-text = myfont.render('Teste', True, (0, 0, 0))
+clock = pygame.time.Clock()
+# Configuração do socket UDP
 
-#try:
-print "Pressione [ESC] para sair"
-
-while True:
-	event_handler(pygame.event.get())
-	if event_flag:
-		event_flag = False
-		print quit
-		if quit:
-			print 'sair'
-			break
-		elif move_forward:
-			print "frente"
-		elif move_backward:
-			print "trás"
-		elif move_left:
-			print "esquerda"
-		elif move_right:
-			print "direita"
-	time.sleep(refresh)
-#except KeyboardInterrupt:
-#	print "OFF"
+try:
+    print "Pressione [ESC] para sair"
+     
+    while quit != True:
+        screen.blit(image, img_rect)
+        pygame.display.flip()
+        event_handler(pygame.event.get())
+        if event_flag:
+            event_flag = False
+            if left_motor == 1 and right_motor == 1:
+                print "1 1"
+            elif left_motor == 1 and right_motor == -1:
+                print "1 -1"
+            elif left_motor == -1 and right_motor == 1:
+                print "-1 1"
+            elif left_motor == -1 and right_motor == -1:
+                print "-1 -1"
+            else:
+                print "0 0"
+        
+    clock.tick(30)
+except KeyboardInterrupt:
+	print "\nOFF"
+ 
+pygame.quit()
