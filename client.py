@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import pygame
+import pygame, socket
 
 global event_flag
 global quit
@@ -77,6 +77,9 @@ screen = pygame.display.set_mode([width, height])
 pygame.display.set_caption('Caveirão')
 clock = pygame.time.Clock()
 # Configuração do socket UDP
+HOST = "localhost"
+PORT = 5454
+udp = socket.socket(type=socket.SOCK_DGRAM)
 
 try:
     print "Pressione [ESC] para sair"
@@ -88,15 +91,16 @@ try:
         if event_flag:
             event_flag = False
             if left_motor == 1 and right_motor == 1:
-                print "1 1"
+                data = [1, 1]
             elif left_motor == 1 and right_motor == -1:
-                print "1 -1"
+                data = [1, -1]
             elif left_motor == -1 and right_motor == 1:
-                print "-1 1"
+                data = [-1, 1]
             elif left_motor == -1 and right_motor == -1:
-                print "-1 -1"
+                data = [-1, -1]
             else:
-                print "0 0"
+                data = [0, 0]
+            package = struct.pack('>2h', data[0], data[1])
         
     clock.tick(30)
 except KeyboardInterrupt:
