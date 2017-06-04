@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import pygame, socket
+import pygame, socket, struct
 
 global event_flag
 global quit
@@ -77,9 +77,9 @@ screen = pygame.display.set_mode([width, height])
 pygame.display.set_caption('Caveirão')
 clock = pygame.time.Clock()
 # Configuração do socket UDP
-HOST = "localhost"
-PORT = 5454
-udp = socket.socket(type=socket.SOCK_DGRAM)
+HOST = "127.0.0.1"
+PORT = 5005
+udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 try:
     print "Pressione [ESC] para sair"
@@ -101,9 +101,11 @@ try:
             else:
                 data = [0, 0]
             package = struct.pack('>2h', data[0], data[1])
+            udp.sendto(package, (HOST, PORT))
         
     clock.tick(30)
 except KeyboardInterrupt:
 	print "\nOFF"
- 
+
+udp.close()
 pygame.quit()
