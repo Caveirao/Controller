@@ -6,6 +6,7 @@ global quit
 global left_motor
 global right_motor
 l_axis = 1
+r_axis = 3
 left_motor = False
 right_motor = False
 event_flag = True
@@ -15,58 +16,66 @@ def event_handler(events):
 
     global event_flag
     global quit
-    global move_forward
-    global move_backward
-    global move_left
-    global move_right
     global left_motor
     global right_motor
 
     for event in events:
-        if event.type == pygame.QUIT:
-            # Se botão "sair" pressionado
-            event_flag = True
-            quit = True
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             # Tecla pressionada
             event_flag = True
+            # Se for a tecla 'esc'
             if event.key == 27:
                 quit = True
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
                 quit = False
-        elif event.type == pygame.JOYAXISMOTION:
-            # Os eixos do joystick foram acionados
-            event_flag = True
-            y = j.get_axis(l_axis)
-            if y < 0:
-                left_motor = 1
-            elif y > 0:
-                left_motor = -1
-            else:
-                left_motor = 0
-        elif event.type == pygame.JOYBUTTONDOWN:
+        if event.type == pygame.JOYBUTTONDOWN:
+            # Botões do joystick acionados
             event_flag = True
             if event.button == 0:
                 right_motor = 1
             if event.button == 2:
                 right_motor = -1
-        elif event.type == pygame.JOYBUTTONUP:
+        if event.type == pygame.JOYBUTTONUP:
             event_flag = True
             if event.button == 0:
                 right_motor = 0
             if event.button == 2:
-                right_motor = 0      
+                right_motor = 0
+        if event.type == pygame.JOYAXISMOTION:
+            # Os eixos do joystick foram acionados
+            event_flag = True
+            left_y = joystick.get_axis(l_axis)
+            right_y = joystick.get_axis(r_axis)
+            if left_y < 0:
+                left_motor = 1
+            elif left_y > 0:
+                left_motor = -1
+            else:
+                left_motor = 0
                 
-# Detecção e inicialização do joystick
-pygame.joystick.init()
-if(pygame.joystick.Joystick(0)):
-	j = pygame.joystick.Joystick(0)
-	j.init()
-	name = j.get_name()
-	print 'Joystick ' + name + 'detectado.'
-else:
-	print 'Joystick não detectado, verifique a conexão.'
+            if right_y < 0:
+                right_motor = 1
+            elif right_y > 0:
+                right_motor = -1
+            else:
+                right_motor = 0
+        
+                
+def detect_joystick():
+    # Detecção e inicialização do joystick
+    pygame.joystick.init()
+    if(pygame.joystick.Joystick(0)):
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+        name = joystick.get_name()
+        print 'Joystick ' + name + 'detectado.'
+        return joystick
+    else:
+        print 'Joystick não detectado, verifique a conexão.'
+
+# Configuração do joystick
+joystick = detect_joystick()
 # Configuração de vídeo, relógio
 width = 640
 height = 480
