@@ -26,7 +26,7 @@ class Receiver(object):
     def listener(self, origin=None):
         self.__active()
         (package, origin_address) = self.udp.recvfrom(1024)
-        return None if (origin is not None) and (origin != origin_address) else struct.unpack('>2h', package)
+        return None if (origin is not None) and (origin != origin_address[0]) else struct.unpack('>2h', package)
 
     def deactivate(self):
         self.udp.close()
